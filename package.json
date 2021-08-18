@@ -1,0 +1,17 @@
+{
+  "name": "firstapirest",
+  "version": "1.0.0",
+  "description": "My first API Rest",
+  "main": "index.js",
+  "scripts": {
+    "test": "start"
+  },
+  "author": "Luis Miguel Silva Amorim",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "nodemon": "^2.0.12",
+    "sequelize": "^6.6.5",
+    "sqlite3": "^4.2.0"
+  }
+}
