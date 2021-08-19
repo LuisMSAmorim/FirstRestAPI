@@ -3,6 +3,10 @@ const app = express()
 
 const connection = require('./database/database')
 const Person = require('./models/Person')
+const cors = require('cors')
+
+// cors
+app.use(cors())
 
 // body-parser
 app.use(express.urlencoded({extended: false}))
