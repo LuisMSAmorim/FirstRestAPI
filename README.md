@@ -13,4 +13,7 @@
 
  - Clone this repository;
  - Install the NPM dependencies: npm install;
- - So, run the api: node index.js;
+ - Replace "#####" for a password in "JWTSecret", at line 12 of "index.js";
+ - Run the API: node index.js;
+ - Create an user using the line 162 endpoint;
+ - Insert 'auth' before the function at line 162;

@@ -1,22 +1,26 @@
 const Sequelize = require('sequelize')
 const connection = require('../database/database')
 
-const Person = connection.define('person', {
+const User = connection.define('user', {
     id: {
         type: Sequelize.INTEGER,
-        autoIncrement: true,
         allowNull: false,
-        primaryKey: true
+        primaryKey: true,
+        autoIncrement: true
     },
     name: {
         type: Sequelize.STRING,
         allowNull: false
     },
-    age: {
-        type: Sequelize.INTEGER,
+    email: {
+        type: Sequelize.STRING,
         allowNull: false
     },
-    createdAt:{
+    password: {
+        type: Sequelize.STRING,
+        allowNull: false
+    },
+    createdAt: {
         type: Sequelize.DATE,
         allowNull: false,
         default: Date.now()
@@ -27,4 +31,4 @@ const Person = connection.define('person', {
     }
 })
 
-module.exports = Person
+module.exports = User

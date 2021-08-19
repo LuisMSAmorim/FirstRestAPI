@@ -3,7 +3,35 @@ const app = express()
 
 const connection = require('./database/database')
 const Person = require('./models/Person')
+const User = require('./models/User')
 const cors = require('cors')
+const jwt = require('jsonwebtoken')
+const bcrypt = require('bcryptjs')
+
+// JWT
+const JWTSecret = '#####'
+
+function auth(req, res, next){
+    const authToken = req.headers['authorization']
+
+    if(authToken != undefined){
+        const bearer = authToken.split(' ')
+        const token = bearer[1]
+
+        jwt.verify(token, JWTSecret, (error, data) => {
+            if(error){
+                res.statusCode = 401
+                res.json({error: 'Token inválido'})
+            }else{
+                req.token = token
+                req.loggedUser = {id: data.id, email: data.email}
+                next()
+            }
+        })
+    }else{
+        res.sendStatus(401)
+    }
+}
 
 // cors
 app.use(cors())
@@ -19,7 +47,8 @@ connection.sync().then(() => {
     console.log(error)
 })
 
-app.get('/persons', async (req, res) => {   
+// persons
+app.get('/persons', auth, async (req, res) => {   
     try{
         let people = await Person.findAll()
         res.statusCode = 200
@@ -29,7 +58,7 @@ app.get('/persons', async (req, res) => {
     }
 })
 
-app.get('/person/:id', async (req, res) => {
+app.get('/person/:id', auth, async (req, res) => {
     let id = req.params.id
 
     try{
@@ -53,7 +82,7 @@ app.get('/person/:id', async (req, res) => {
     }
 })
 
-app.post('/person', async (req, res) => {
+app.post('/person', auth, async (req, res) => {
     let name = req.body.name
     let age = req.body.age
 
@@ -63,14 +92,13 @@ app.post('/person', async (req, res) => {
         }else{
             await Person.create({name, age})
             res.sendStatus(200)
-            res.redirect('/persons')
         }
     }catch{
         res.sendStatus(500)
     }
 })
 
-app.delete('/person/:id', async (req, res) => {
+app.delete('/person/:id', auth, async (req, res) => {
     let id = req.params.id
 
     try{
@@ -94,7 +122,7 @@ app.delete('/person/:id', async (req, res) => {
     }
 })
 
-app.put('/person/:id', async (req, res) => {
+app.put('/person/:id', auth, async (req, res) => {
     let id = req.params.id
     let name = req.body.name
     let age = req.body.age
@@ -117,6 +145,70 @@ app.put('/person/:id', async (req, res) => {
         }
     }catch{
         res.sendStatus(404)
+    }
+})
+
+// user
+app.get('/users', auth, async (req, res) => {
+    try{
+        let users = await User.findAll()
+        res.statusCode = 200
+        res.json(users)
+    }catch{
+        res.sendStatus(404)
+    }
+})
+
+app.post('/user', async (req, res) => {
+    let name = req.body.name
+    let email = req.body.email
+    let password = req.body.password
+
+    let salt = bcrypt.genSaltSync(10)
+    let hash = bcrypt.hashSync(password, salt)
+
+    try{
+        if(name == undefined || email == undefined || password == undefined){
+            res.sendStatus(400)
+        }else{
+            await User.create({name, email, password: hash})
+            res.sendStatus(200)
+        }
+    }catch{
+        res.sendStatus(500)
+    }
+})
+
+app.post('/auth', async (req, res) => {
+    let email = req.body.email
+    let password = req.body.password
+
+    if(email == undefined){
+        res.sendStatus(400)
+    }else{
+        let user = await User.findOne({
+            where: {
+                email
+            }
+        })
+        if(user == undefined){
+            res.sendStatus(404)
+        }else{
+            let validate = bcrypt.compareSync(password, user.password)
+
+            if(validate){
+                jwt.sign({id: user.id, email: user.email}, JWTSecret, {expiresIn: '48h'}, (error, token) => {
+                    if(error){
+                        res.sendStatus(400)
+                    }else{
+                        res.statusCode = 200
+                        res.json({token})
+                    }
+                })
+            }else{
+                res.sendStatus(401)
+            }
+        }
     }
 })
 
