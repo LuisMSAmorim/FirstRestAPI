@@ -216,6 +216,26 @@ app.post('/user', async (req, res) => {
     }
 })
 
+app.delete('/user/:id', auth, async (req, res) => {
+    let id = req.params.id
+
+    try{
+        let user = await User.destroy({
+            where: {
+                id
+            }
+        }) 
+
+        if(!user){
+            res.sendStatus(404)
+        }
+
+        res.sendStatus(200)
+    }catch{
+        res.sendStatus(500)
+    }
+})
+
 app.post('/auth', async (req, res) => {
     let email = req.body.email
     let password = req.body.password
