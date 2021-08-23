@@ -14,7 +14,7 @@ const JWTSecret = 'sdadsaafadsfdsafdssadsjfaaasfsafsa'
 function auth(req, res, next){
     const authToken = req.headers['authorization']
 
-    if(authToken == undefined){
+    if(!authToken){
         return res.status(401).json({error: 'Token não autorizado'})
     }
 
@@ -22,6 +22,7 @@ function auth(req, res, next){
     const token = bearer[1]
 
     jwt.verify(token, JWTSecret, (error, data) => {
+        
         if(error){
             return res.status(401).json({error: 'Token inválido'})
         }
