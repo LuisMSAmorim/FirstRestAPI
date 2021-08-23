@@ -48,11 +48,25 @@ connection.sync().then(() => {
 })
 
 // persons
-app.get('/persons', auth, async (req, res) => {   
+app.get('/persons', auth, async (req, res) => {
+    
+    let HATEOAS = [
+        {
+            href: 'http://localhost:8081/person/0',
+            method: 'GET',
+            rel: 'get_person'
+        },
+        {
+            href: 'http://localhost:8081/auth',
+            method: 'POST',
+            rel: 'login'
+        }
+    ]
+
     try{
         let people = await Person.findAll()
         res.statusCode = 200
-        res.json(people)
+        res.json({people, _links: HATEOAS})
     }catch{
         res.status(404)
     }
@@ -60,6 +74,29 @@ app.get('/persons', auth, async (req, res) => {
 
 app.get('/person/:id', auth, async (req, res) => {
     let id = req.params.id
+
+    let HATEOAS = [
+        {
+            href: 'http://localhost:8081/person',
+            method: 'POST',
+            rel: 'post_person'
+        },
+        {
+            href: 'http://localhost:8081/person',
+            method: 'DELETE',
+            rel: 'delete_person'
+        },
+        {
+            href: 'http://localhost:8081/person',
+            method: 'PUT',
+            rel: 'put_person'
+        },
+        {
+            href: 'http://localhost:8081/auth',
+            method: 'POST',
+            rel: 'login'
+        }
+    ]
 
     try{
         if(isNaN(id)){
@@ -74,7 +111,7 @@ app.get('/person/:id', auth, async (req, res) => {
                 res.sendStatus(404)
             }else{
                 res.statusCode = 200
-                res.json(person)
+                res.json({person, _links: HATEOAS})
             }
         }
     }catch{
